@@ -12,8 +12,13 @@
 <body class="bg-gray-100 font-sans">
     <div id="test-start" class="flex flex-col items-center justify-center h-screen">
         <h1 class="text-3xl font-bold mb-4">口算测试类型选择</h1>
-        <button id="type1" class="bg-blue-500 text-white py-2 px-4 rounded mb-2 hover:bg-blue-600">2 位整数乘以 1 位大于 1 的整数</button>
-        <button id="type2" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">小数点前为 1 位非 0 数字的小数乘以整数</button>
+        <button id="type1" class="bg-blue-500 text-white py-2 px-4 rounded mb-2 hover:bg-blue-600">1 位整数乘以 1 位整数</button>
+        <button id="type2" class="bg-green-500 text-white py-2 px-4 rounded mb-2 hover:bg-green-600">2 位整数乘以 1 位整数</button>
+        <button id="type3" class="bg-yellow-500 text-white py-2 px-4 rounded mb-2 hover:bg-yellow-600">3 位整数乘以 1 位整数</button>
+        <button id="type4" class="bg-purple-500 text-white py-2 px-4 rounded mb-2 hover:bg-purple-600">4 位整数乘以 1 位整数</button>
+        <button id="type5" class="bg-orange-500 text-white py-2 px-4 rounded mb-2 hover:bg-orange-600">2 位整数乘以 2 位整数</button>
+        <button id="type6" class="bg-teal-500 text-white py-2 px-4 rounded mb-2 hover:bg-teal-600">小数点前为 1 位非 0 数字的小数乘以整数</button>
+        <button id="leaderboard-btn" class="bg-pink-500 text-white py-2 px-4 rounded hover:bg-pink-600">查看排行榜</button>
     </div>
     <div id="test-question" class="hidden flex flex-col items-center justify-center h-screen">
         <p id="question" class="text-2xl mb-4"></p>
@@ -22,142 +27,47 @@
         <p id="result" class="text-lg mb-4"></p>
         <p id="last-result" class="text-lg mb-4"></p>
         <p id="analysis" class="text-lg mb-4 hidden"></p>
-        <p id="statistics" class="text-lg mb-4">答对: <span id="correct-count">0</span> 答错: <span id="wrong-count">0</span></p>
+        <p id="statistics" class="text-lg mb-4">当前答对: <span id="correct-count">0</span> 答错: <span id="wrong-count">0</span></p>
+        <p id="question-count" class="text-lg mb-4">当前题目: <span id="current-question">1</span> / 10</p>
         <button id="continue" class="bg-blue-500 text-white py-2 px-4 rounded mb-2 hover:bg-blue-600">继续测试</button>
-        <button id="end" class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">结束测试</button>
     </div>
-    <div id="wrong-questions-review" class="hidden flex flex-col items-center justify-center h-screen">
-        <h2 class="text-2xl font-bold mb-4">错题回顾</h2>
-        <ul id="wrong-questions-list" class="list-disc"></ul>
+    <div id="test-result" class="hidden flex flex-col items-center justify-center h-screen">
+        <h2 class="text-2xl font-bold mb-4">测试成绩</h2>
+        <p>正确率: <span id="accuracy"></span>%</p>
+        <p>耗时: <span id="time-taken"></span> 秒</p>
+        <p>本次排名: <span id="current-rank"></span></p>
+        <p id="congratulation" class="text-green-500 hidden"></p>
+        <label for="nickname" id="nickname-label" class="hidden">请输入你的昵称：</label>
+        <input type="text" id="nickname" class="border p-2 mb-4 rounded hidden">
+        <button id="save-result" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 hidden">保存成绩</button>
         <button id="back-to-start" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">返回开始页面</button>
     </div>
+    <div id="leaderboard" class="hidden flex flex-col items-center justify-center h-screen">
+        <h2 class="text-2xl font-bold mb-4">排行榜</h2>
+        <select id="leaderboard-type" class="mb-4">
+            <option value="1">1 位整数乘以 1 位整数</option>
+            <option value="2">2 位整数乘以 1 位整数</option>
+            <option value="3">3 位整数乘以 1 位整数</option>
+            <option value="4">4 位整数乘以 1 位整数</option>
+            <option value="5">2 位整数乘以 2 位整数</option>
+            <option value="6">小数点前为 1 位非 0 数字的小数乘以整数</option>
+        </select>
+        <table id="leaderboard-table" class="border-collapse border border-gray-400">
+            <thead>
+                <tr>
+                    <th class="border border-gray-400 p-2">排名</th>
+                    <th class="border border-gray-400 p-2">成绩获得者</th>
+                    <th class="border border-gray-400 p-2">正确率</th>
+                    <th class="border border-gray-400 p-2">耗时 (秒)</th>
+                    <th class="border border-gray-400 p-2">测试日期时间</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button id="close-leaderboard" class="bg-blue-500 text-white py-2 px-4 rounded mt-4 hover:bg-blue-600">关闭排行榜</button>
+    </div>
 
-    <script>
-        const testStart = document.getElementById('test-start');
-        const testQuestion = document.getElementById('test-question');
-        const wrongQuestionsReview = document.getElementById('wrong-questions-review');
-        const type1Btn = document.getElementById('type1');
-        const type2Btn = document.getElementById('type2');
-        const questionEl = document.getElementById('question');
-        const answerInput = document.getElementById('answer');
-        const submitBtn = document.getElementById('submit');
-        const resultEl = document.getElementById('result');
-        const lastResultEl = document.getElementById('last-result');
-        const analysisEl = document.getElementById('analysis');
-        const continueBtn = document.getElementById('continue');
-        const endBtn = document.getElementById('end');
-        const correctCountEl = document.getElementById('correct-count');
-        const wrongCountEl = document.getElementById('wrong-count');
-        const wrongQuestionsList = document.getElementById('wrong-questions-list');
-        const backToStartBtn = document.getElementById('back-to-start');
-
-        let currentType;
-        let correctAnswer;
-        let correctCount = 0;
-        let wrongCount = 0;
-        let wrongQuestions = [];
-        let lastQuestion = '';
-        let lastUserAnswer = '';
-
-        type1Btn.addEventListener('click', () => {
-            currentType = 1;
-            startTest();
-        });
-
-        type2Btn.addEventListener('click', () => {
-            currentType = 2;
-            startTest();
-        });
-
-        function startTest() {
-            testStart.classList.add('hidden');
-            testQuestion.classList.remove('hidden');
-            generateQuestion();
-        }
-
-        function generateQuestion() {
-            let num1, num2;
-            if (currentType === 1) {
-                num1 = Math.floor(Math.random() * 90) + 10;
-                num2 = Math.floor(Math.random() * 8) + 2;
-            } else {
-                const integerPart = Math.floor(Math.random() * 9) + 1;
-                const decimalPart = Math.random().toFixed(2).slice(2);
-                num1 = parseFloat(`${integerPart}.${decimalPart}`);
-                num2 = Math.floor(Math.random() * 10) + 1;
-            }
-            correctAnswer = parseFloat((num1 * num2).toFixed(2));
-            lastQuestion = `${num1} × ${num2} = `;
-            questionEl.textContent = lastQuestion;
-            answerInput.value = '';
-            resultEl.textContent = '';
-            analysisEl.textContent = '';
-            analysisEl.classList.add('hidden');
-        }
-
-        submitBtn.addEventListener('click', () => {
-            const userAnswer = parseFloat(answerInput.value);
-            lastUserAnswer = userAnswer;
-            if (userAnswer === correctAnswer) {
-                resultEl.textContent = '回答正确！';
-                correctCount++;
-                correctCountEl.textContent = correctCount;
-                generateQuestion();
-            } else {
-                resultEl.textContent = `回答错误，正确答案是 ${correctAnswer}`;
-                wrongCount++;
-                wrongCountEl.textContent = wrongCount;
-                wrongQuestions.push(lastQuestion + correctAnswer);
-                showAnalysis(lastQuestion, correctAnswer);
-            }
-            lastResultEl.textContent = `上一题: ${lastQuestion} 你的答案: ${lastUserAnswer} 结果: ${resultEl.textContent}`;
-        });
-
-        function showAnalysis(question, answer) {
-            const numbers = question.match(/\d+\.?\d*/g);
-            const num1 = parseFloat(numbers[0]);
-            const num2 = parseFloat(numbers[1]);
-            let analysis = '';
-            if (currentType === 1) {
-                analysis = `分析：将 ${num1} 拆分为十位和个位，即 ${Math.floor(num1 / 10)}0 和 ${num1 % 10}。先计算 ${Math.floor(num1 / 10)}0 × ${num2} = ${Math.floor(num1 / 10) * num2 * 10}，再计算 ${num1 % 10} × ${num2} = ${(num1 % 10) * num2}，最后将两个结果相加，${Math.floor(num1 / 10) * num2 * 10} + ${(num1 % 10) * num2} = ${answer}。`;
-            } else {
-                analysis = `分析：可以先不考虑小数点，将 ${num1} 当作整数 ${num1.toString().replace('.', '')} 与 ${num2} 相乘，得到 ${(num1.toString().replace('.', '') * num2).toFixed(0)}。因为 ${num1} 有两位小数，所以从结果的右边数出两位点上小数点，即 ${answer}。`;
-            }
-            analysisEl.textContent = analysis;
-            analysisEl.classList.remove('hidden');
-        }
-
-        continueBtn.addEventListener('click', generateQuestion);
-
-        endBtn.addEventListener('click', () => {
-            testQuestion.classList.add('hidden');
-            wrongQuestionsReview.classList.remove('hidden');
-            displayWrongQuestions();
-        });
-
-        function displayWrongQuestions() {
-            wrongQuestionsList.innerHTML = '';
-            wrongQuestions.forEach(question => {
-                const li = document.createElement('li');
-                li.textContent = question;
-                wrongQuestionsList.appendChild(li);
-            });
-        }
-
-        backToStartBtn.addEventListener('click', () => {
-            wrongQuestionsReview.classList.add('hidden');
-            testStart.classList.remove('hidden');
-            correctCount = 0;
-            wrongCount = 0;
-            correctCountEl.textContent = 0;
-            wrongCountEl.textContent = 0;
-            wrongQuestions = [];
-            lastResultEl.textContent = '';
-            analysisEl.textContent = '';
-            analysisEl.classList.add('hidden');
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 
-</html>
-    
+</html>    
