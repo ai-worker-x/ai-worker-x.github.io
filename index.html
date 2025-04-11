@@ -29,7 +29,7 @@
         <p id="analysis" class="text-lg mb-4 hidden"></p>
         <p id="statistics" class="text-lg mb-4">当前答对: <span id="correct-count">0</span> 答错: <span id="wrong-count">0</span></p>
         <p id="question-count" class="text-lg mb-4">当前题目: <span id="current-question">1</span> / 10</p>
-        <button id="continue" class="bg-blue-500 text-white py-2 px-4 rounded mb-2 hover:bg-blue-600">继续测试</button>
+        <button id="back-to-main-from-question" class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">返回主界面</button>
     </div>
     <div id="test-result" class="hidden flex flex-col items-center justify-center h-screen">
         <h2 class="text-2xl font-bold mb-4">测试成绩</h2>
@@ -40,7 +40,7 @@
         <label for="nickname" id="nickname-label" class="hidden">请输入你的昵称：</label>
         <input type="text" id="nickname" class="border p-2 mb-4 rounded hidden">
         <button id="save-result" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 hidden">保存成绩</button>
-        <button id="back-to-start" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">返回开始页面</button>
+        <button id="back-to-main-from-result" class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">返回主界面</button>
     </div>
     <div id="leaderboard" class="hidden flex flex-col items-center justify-center h-screen">
         <h2 class="text-2xl font-bold mb-4">排行榜</h2>
@@ -65,6 +65,7 @@
             <tbody></tbody>
         </table>
         <button id="close-leaderboard" class="bg-blue-500 text-white py-2 px-4 rounded mt-4 hover:bg-blue-600">关闭排行榜</button>
+        <button id="back-to-main-from-leaderboard" class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">返回主界面</button>
     </div>
 
     <script src="script.js"></script>

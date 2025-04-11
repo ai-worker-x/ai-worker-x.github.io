@@ -18,7 +18,6 @@ const analysisEl = document.getElementById('analysis');
 const correctCountEl = document.getElementById('correct-count');
 const wrongCountEl = document.getElementById('wrong-count');
 const currentQuestionEl = document.getElementById('current-question');
-const continueBtn = document.getElementById('continue');
 const accuracyEl = document.getElementById('accuracy');
 const timeTakenEl = document.getElementById('time-taken');
 const currentRankEl = document.getElementById('current-rank');
@@ -26,7 +25,9 @@ const congratulationEl = document.getElementById('congratulation');
 const nicknameLabel = document.getElementById('nickname-label');
 const nicknameInput = document.getElementById('nickname');
 const saveResultBtn = document.getElementById('save-result');
-const backToStartBtn = document.getElementById('back-to-start');
+const backToMainFromQuestion = document.getElementById('back-to-main-from-question');
+const backToMainFromResult = document.getElementById('back-to-main-from-result');
+const backToMainFromLeaderboard = document.getElementById('back-to-main-from-leaderboard');
 const leaderboardTable = document.getElementById('leaderboard-table').getElementsByTagName('tbody')[0];
 const closeLeaderboardBtn = document.getElementById('close-leaderboard');
 const leaderboardTypeSelect = document.getElementById('leaderboard-type');
@@ -292,8 +293,18 @@ function displayLeaderboard() {
 
 leaderboardTypeSelect.addEventListener('change', displayLeaderboard);
 
-backToStartBtn.addEventListener('click', () => {
+backToMainFromQuestion.addEventListener('click', () => {
+    testQuestion.classList.add('hidden');
+    testStart.classList.remove('hidden');
+});
+
+backToMainFromResult.addEventListener('click', () => {
     testResult.classList.add('hidden');
+    testStart.classList.remove('hidden');
+});
+
+backToMainFromLeaderboard.addEventListener('click', () => {
+    leaderboard.classList.add('hidden');
     testStart.classList.remove('hidden');
 });
 
