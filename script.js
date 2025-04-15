@@ -129,10 +129,36 @@ function generateQuestion() {
     analysisEl.classList.add('hidden');
 }
 
-submitBtn.addEventListener('click', () => {
-    const userAnswer = parseFloat(answerInput.value);
+// 添加回车键监听
+answerInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        submitAnswer();
+    }
+});
+
+// 修改原来的submitBtn点击事件
+submitBtn.addEventListener('click', submitAnswer);
+
+// 创建新的提交函数
+function submitAnswer() {
+    const userAnswer = answerInput.value;
+    
+    // 1. 检查是否为空
+    if (!userAnswer) {
+        resultEl.textContent = '请输入正确答案';
+        return;
+    }
+    
+    // 2. 检查输入是否合法
+    if (!/^[0-9.]*$/.test(userAnswer)) {
+        resultEl.textContent = '只能输入数字和小数点';
+        return;
+    }
+    
+    const parsedAnswer = parseFloat(userAnswer);
     const question = questionEl.textContent;
-    if (userAnswer === correctAnswer) {
+    
+    if (parsedAnswer === correctAnswer) {
         resultEl.textContent = '回答正确！';
         correctCount++;
         correctCountEl.textContent = correctCount;
@@ -142,15 +168,17 @@ submitBtn.addEventListener('click', () => {
         wrongCountEl.textContent = wrongCount;
         showAnalysis(question, correctAnswer);
     }
-    lastResultEl.textContent = `上一题: ${question} 你的答案: ${userAnswer} 结果: ${resultEl.textContent}`;
+    
+    lastResultEl.textContent = `上一题: ${question} 你的答案: ${parsedAnswer} 结果: ${resultEl.textContent}`;
     currentQuestion++;
     currentQuestionEl.textContent = currentQuestion;
+    
     if (currentQuestion > 10) {
         endTest();
     } else {
         generateQuestion();
     }
-});
+}
 
 function showAnalysis(question, answer) {
     const numbers = question.match(/\d+\.?\d*/g);
@@ -181,83 +209,102 @@ function showAnalysis(question, answer) {
     analysisEl.classList.remove('hidden');
 }
 
+// 新增计算排名的函数
+function calculateRank(accuracy, timeTaken) {
+    if (!leaderboardData[currentType]) {
+        return 1;
+    }
+    
+    // 复制现有记录并添加当前成绩进行排名计算
+    const records = [...leaderboardData[currentType]];
+    const currentRecord = { accuracy, timeTaken };
+    records.push(currentRecord);
+    
+    // 按照分数和时间排序
+    records.sort((a, b) => {
+        if (a.accuracy !== b.accuracy) {
+            return b.accuracy - a.accuracy;
+        }
+        return a.timeTaken - b.timeTaken;
+    });
+    
+    // 查找当前成绩的排名
+    return records.findIndex(record => 
+        record.accuracy === currentRecord.accuracy && 
+        record.timeTaken === currentRecord.timeTaken
+    ) + 1;
+}
+
 function endTest() {
     endTime = Date.now();
-    const totalTime = (endTime - startTime) / 1000;
+    const timeTaken = (endTime - startTime) / 1000;
     const accuracy = (correctCount / 10) * 100;
     accuracyEl.textContent = accuracy.toFixed(2);
-    timeTakenEl.textContent = totalTime.toFixed(2);
+    timeTakenEl.textContent = timeTaken.toFixed(2);
     testQuestion.classList.add('hidden');
     testResult.classList.remove('hidden');
-    const { rank, isNewBest, isTop10 } = saveResult(accuracy, totalTime);
+    
+    // 计算排名
+    const rank = calculateRank(accuracy, timeTaken);
     currentRankEl.textContent = rank;
-    if (isNewBest) {
-        congratulationEl.textContent = '恭喜你，刷新了该类型的最好成绩！继续加油哦！';
+    
+    if (rank <= 10) {
+        // 前10名显示输入昵称界面
+        congratulationEl.textContent = `恭喜你获得第${rank}名！请输入你的昵称：`;
         congratulationEl.classList.remove('hidden');
-    } else {
-        congratulationEl.classList.add('hidden');
-    }
-    if (isTop10) {
         nicknameLabel.classList.remove('hidden');
         nicknameInput.classList.remove('hidden');
         saveResultBtn.classList.remove('hidden');
     } else {
-        saveResultLocally(accuracy, totalTime, '匿名', new Date().toLocaleString());
+        // 10名以外只显示排名
+        congratulationEl.textContent = `恭喜你获得第${rank}名！`;
+        congratulationEl.classList.remove('hidden');
+        nicknameLabel.classList.add('hidden');
+        nicknameInput.classList.add('hidden');
+        saveResultBtn.classList.add('hidden');
     }
 }
 
-function saveResult(accuracy, totalTime) {
-    if (!leaderboardData[currentType]) {
-        leaderboardData[currentType] = [];
-    }
-    const newEntry = { accuracy, totalTime };
-    leaderboardData[currentType].push(newEntry);
-    leaderboardData[currentType].sort((a, b) => {
-        if (a.accuracy !== b.accuracy) {
-            return b.accuracy - a.accuracy;
-        }
-        return a.totalTime - b.totalTime;
-    });
-    leaderboardData[currentType] = leaderboardData[currentType].slice(0, 10);
-    let rank = leaderboardData[currentType].findIndex(entry => entry === newEntry) + 1;
-    let isNewBest = false;
-    let isTop10 = rank <= 10;
-    if (rank === 1) {
-        const previousBest = leaderboardData[currentType][1];
-        if (!previousBest || (accuracy > previousBest.accuracy || (accuracy === previousBest.accuracy && totalTime < previousBest.totalTime))) {
-            isNewBest = true;
-        }
-    }
-    return { rank, isNewBest, isTop10 };
-}
-
+// 修改保存按钮的事件处理
 saveResultBtn.addEventListener('click', () => {
-    const nickname = nicknameInput.value || '匿名';
+    const nickname = nicknameInput.value.trim();
+    if (!nickname) {
+        alert('请输入昵称！');
+        return;
+    }
+    
     const accuracy = parseFloat(accuracyEl.textContent);
     const timeTaken = parseFloat(timeTakenEl.textContent);
     const testDate = new Date().toLocaleString();
-    saveResultLocally(accuracy, totalTime, nickname, testDate);
-    nicknameLabel.classList.add('hidden');
-    nicknameInput.classList.add('hidden');
-    saveResultBtn.classList.add('hidden');
-});
-
-function saveResultLocally(accuracy, totalTime, nickname, testDate) {
+    
+    // 保存记录
     if (!leaderboardData[currentType]) {
         leaderboardData[currentType] = [];
     }
+    
     const newEntry = { accuracy, timeTaken, nickname, testDate };
     leaderboardData[currentType].push(newEntry);
     leaderboardData[currentType].sort((a, b) => {
         if (a.accuracy !== b.accuracy) {
             return b.accuracy - a.accuracy;
         }
-        return a.totalTime - b.totalTime;
+        return a.timeTaken - b.timeTaken;
     });
+    
+    // 只保留前10名记录
     leaderboardData[currentType] = leaderboardData[currentType].slice(0, 10);
     localStorage.setItem('leaderboard', JSON.stringify(leaderboardData));
-}
+    
+    // 隐藏输入界面
+    nicknameLabel.classList.add('hidden');
+    nicknameInput.classList.add('hidden');
+    saveResultBtn.classList.add('hidden');
+    
+    // 更新排行榜显示
+    displayLeaderboard();
+});
 
+// 删除原有的saveResult和saveResultLocally函数，因为逻辑已合并到上述代码中
 function displayLeaderboard() {
     const selectedType = leaderboardTypeSelect.value;
     leaderboardTable.innerHTML = '';
@@ -307,8 +354,3 @@ backToMainFromLeaderboard.addEventListener('click', () => {
     leaderboard.classList.add('hidden');
     testStart.classList.remove('hidden');
 });
-
-closeLeaderboardBtn.addEventListener('click', () => {
-    leaderboard.classList.add('hidden');
-    testStart.classList.remove('hidden');
-});    

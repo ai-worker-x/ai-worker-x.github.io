@@ -22,7 +22,7 @@
     </div>
     <div id="test-question" class="hidden flex flex-col items-center justify-center h-screen">
         <p id="question" class="text-2xl mb-4"></p>
-        <input type="number" id="answer" class="border p-2 mb-4 rounded">
+        <input type="text" id="answer" pattern="[0-9.]*" required>
         <button id="submit" class="bg-yellow-500 text-white py-2 px-4 rounded mb-2 hover:bg-yellow-600">提交</button>
         <p id="result" class="text-lg mb-4"></p>
         <p id="last-result" class="text-lg mb-4"></p>
@@ -64,11 +64,11 @@
             </thead>
             <tbody></tbody>
         </table>
-        <button id="close-leaderboard" class="bg-blue-500 text-white py-2 px-4 rounded mt-4 hover:bg-blue-600">关闭排行榜</button>
+        <!-- 删除关闭排行榜按钮 -->
         <button id="back-to-main-from-leaderboard" class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">返回主界面</button>
     </div>
 
     <script src="script.js"></script>
 </body>
 
-</html>    
+</html>
